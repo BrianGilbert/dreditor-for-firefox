@@ -2575,6 +2575,9 @@ Drupal.dreditor.syntaxAutocomplete.prototype.suggestions.issue = function (needl
   if (matches = needle.match('^https?://(?:www.)?drupal.org/node/([0-9]+)')) {
     return '[#' + matches[1] + ']^';
   }
+  if (matches = needle.match('^https?://(?:www.)?drupal.org/project/([a-z_]+)/issues/([0-9]+)')) {
+    return '[#' + matches[2] + ']^';
+  }
   return false;
 };
 
@@ -2636,48 +2639,77 @@ Drupal.dreditor.syntaxAutocomplete.prototype.suggestions.comment = function (nee
   }
   return false;
 };
+
 Drupal.behaviors.dreditorFilterIssueCredits = {
-  attach: () => {
+  attach: ()=> {
     if (document.body.classList.contains('🪄')) {
       return;
     }
-    document.body.classList.add('🪄')
-    document.querySelectorAll('input[data-by]').forEach(el => {
-    const btn = document.createElement('button');
-    btn.textContent = '🔍️ Filter';
-    btn.addEventListener('click', (e) => {
+    document.body.classList.add('🪄');
+    const summary = document.querySelector('.credit-summary');
+    const summaryFilter = document.createElement('div');
+    summary.append(summaryFilter);
+    const resetFilter = document.createElement('button')
+    resetFilter.textContent = '❌ Reset filter';
+    resetFilter.style.display = 'none';
+    resetFilter.addEventListener('click', (e) => {
+      document.querySelectorAll('.comment, .merge-request-activity').forEach(el => el.style.display = 'block');
+      summaryFilter.textContent = '';
+      resetFilter.style.display = 'none';
       e.preventDefault();
-      let scrollTo;
-      document.querySelectorAll('.comment').forEach(cm => {
-       if (cm.querySelector('.username')?.textContent.match(el.dataset.by)) {
-          cm.style.display = 'block';
-          if (!scrollTo) {
-            scrollTo = cm;
-          }
-          return;
-        }
-        cm.style.display = 'none';
-      })
-      scrollTo.scrollIntoView();
     })
-    el.closest('td').appendChild(btn);
-  })
-  document.querySelectorAll('.comment:has(.username)').forEach(el => {
-    const btn = document.createElement('button');
-    btn.textContent = '✅ Credit';
-    const userName = el.querySelector('.username').textContent;
-    const tgt = document.querySelector(`input[data-by="${userName}"]`);
-    if (tgt) {
+    summary.append(resetFilter);
+    document.querySelectorAll('input[data-by]').forEach(el => {
+      const btn = document.createElement('button');
+      btn.textContent = '🔍️ Filter';
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        tgt.checked = true;
-        tgt.scrollIntoView();
-      });
-      el.appendChild(btn);
-    }
-  });
+        let scrollTo;
+        // Comments.
+        const selectedUser = el.dataset.by;
+        document.querySelectorAll('.comment').forEach(cm => {
+          if (cm.querySelector('.username')?.textContent.match(selectedUser)) {
+            cm.style.display = 'block';
+            if (!scrollTo) {
+              scrollTo = cm;
+            }
+            return;
+          }
+          cm.style.display = 'none';
+        });
+        // Merge request activity.
+        document.querySelectorAll('.merge-request-activity').forEach(mra => {
+          if (mra.querySelector(`a[href="/u/${selectedUser}"]`)) {
+            mra.style.display = 'block';
+            if (!scrollTo) {
+              scrollTo = mra;
+            }
+            return;
+          }
+          mra.style.display = 'none';
+        });
+        scrollTo.scrollIntoView();
+        summaryFilter.textContent = `Filtered to: ${selectedUser}`;
+        resetFilter.style.display = 'block';
+      })
+      el.closest('.form-item').appendChild(btn);
+    });
+    document.querySelectorAll('.comment:has(.username)').forEach(el => {
+      const btn = document.createElement('button');
+      btn.textContent = '✅ Credit';
+      const userName = el.querySelector('.username').textContent;
+      const tgt = document.querySelector(`input[data-by="${userName}"]`);
+      if (tgt) {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          tgt.checked = true;
+          tgt.scrollIntoView();
+        });
+        el.appendChild(btn);
+      }
+    });
   }
-}
+};
 
 (function () {
     // dreditor.css
