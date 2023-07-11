@@ -2648,17 +2648,30 @@ Drupal.behaviors.dreditorFilterIssueCredits = {
     document.body.classList.add('🪄');
     const summary = document.querySelector('.credit-summary');
     const summaryFilter = document.createElement('div');
-    summary.append(summaryFilter);
-    const resetFilter = document.createElement('button')
-    resetFilter.textContent = '❌ Reset filter';
-    resetFilter.style.display = 'none';
-    resetFilter.addEventListener('click', (e) => {
-      document.querySelectorAll('.comment, .merge-request-activity').forEach(el => el.style.display = 'block');
-      summaryFilter.textContent = '';
-      resetFilter.style.display = 'none';
-      e.preventDefault();
-    })
-    summary.append(resetFilter);
+    summary.parentNode.insertBefore(summaryFilter, summary);
+    const createResetButton = () => {
+      const button = document.createElement('button')
+      button.textContent = '❌ Reset filter';
+      button.style.display = 'none';
+      const resetListener = (e) => {
+        document.querySelectorAll('.comment, .merge-request-activity').forEach(el => el.style.display = 'block');
+        summaryFilter.textContent = '';
+        title.textContent = 'Comments';
+        button.style.display = 'none';
+        resetFilterTop.style.display = 'none';
+        resetFilter.style.display = 'none';
+        e.preventDefault();
+      };
+      button.addEventListener('click', resetListener)
+      return button;
+    }
+    const resetFilter = createResetButton();
+    summary.parentNode.insertBefore(resetFilter, summary);
+
+    const commentsSection = document.querySelector('section.comment-wrapper');
+    const title = commentsSection.querySelector('h2.title');
+    const resetFilterTop = createResetButton();
+    commentsSection.insertBefore(resetFilterTop, title.nextSibling);
     document.querySelectorAll('input[data-by]').forEach(el => {
       const btn = document.createElement('button');
       btn.textContent = '🔍️ Filter';
@@ -2690,7 +2703,9 @@ Drupal.behaviors.dreditorFilterIssueCredits = {
         });
         scrollTo.scrollIntoView();
         summaryFilter.textContent = `Filtered to: ${selectedUser}`;
+        title.textContent = `Comments (filtered to: ${selectedUser})`;
         resetFilter.style.display = 'block';
+        resetFilterTop.style.display = 'block';
       })
       el.closest('.form-item').appendChild(btn);
     });
@@ -2703,7 +2718,7 @@ Drupal.behaviors.dreditorFilterIssueCredits = {
         btn.addEventListener('click', (e) => {
           e.preventDefault();
           tgt.checked = true;
-          tgt.scrollIntoView();
+          summaryFilter.scrollIntoView();
         });
         el.appendChild(btn);
       }
