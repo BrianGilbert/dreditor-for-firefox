@@ -2577,7 +2577,7 @@ Drupal.dreditor.syntaxAutocomplete.prototype.suggestions.issue = function (needl
     return '[#' + matches[1] + ']^';
   }
   if (matches = needle.match('^https?://(?:www.)?drupal.org/project/([a-z_]+)/issues/([0-9]+)')) {
-    return '[#' + matches[1] + ']^';
+    return '[#' + matches[2] + ']^';
   }
   return false;
 };
