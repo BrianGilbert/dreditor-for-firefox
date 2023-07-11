@@ -2572,12 +2572,8 @@ Drupal.dreditor.syntaxAutocomplete.prototype.suggestions.html = {
  */
 Drupal.dreditor.syntaxAutocomplete.prototype.suggestions.issue = function (needle) {
   var matches;
-  https://www.drupal.org/project/drupal/issues/3231503
   if (matches = needle.match('^https?://(?:www.)?drupal.org/node/([0-9]+)')) {
     return '[#' + matches[1] + ']^';
-  }
-  if (matches = needle.match('^https?://(?:www.)?drupal.org/project/([a-z_]+)/issues/([0-9]+)')) {
-    return '[#' + matches[2] + ']^';
   }
   return false;
 };
@@ -2640,6 +2636,48 @@ Drupal.dreditor.syntaxAutocomplete.prototype.suggestions.comment = function (nee
   }
   return false;
 };
+Drupal.behaviors.dreditorFilterIssueCredits = {
+  attach: () => {
+    if (document.body.classList.contains('🪄')) {
+      return;
+    }
+    document.body.classList.add('🪄')
+    document.querySelectorAll('input[data-by]').forEach(el => {
+    const btn = document.createElement('button');
+    btn.textContent = '🔍️ Filter';
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      let scrollTo;
+      document.querySelectorAll('.comment').forEach(cm => {
+       if (cm.querySelector('.username')?.textContent.match(el.dataset.by)) {
+          cm.style.display = 'block';
+          if (!scrollTo) {
+            scrollTo = cm;
+          }
+          return;
+        }
+        cm.style.display = 'none';
+      })
+      scrollTo.scrollIntoView();
+    })
+    el.closest('td').appendChild(btn);
+  })
+  document.querySelectorAll('.comment:has(.username)').forEach(el => {
+    const btn = document.createElement('button');
+    btn.textContent = '✅ Credit';
+    const userName = el.querySelector('.username').textContent;
+    const tgt = document.querySelector(`input[data-by="${userName}"]`);
+    if (tgt) {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        tgt.checked = true;
+        tgt.scrollIntoView();
+      });
+      el.appendChild(btn);
+    }
+  });
+  }
+}
 
 (function () {
     // dreditor.css
