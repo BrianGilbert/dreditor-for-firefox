@@ -2572,7 +2572,11 @@ Drupal.dreditor.syntaxAutocomplete.prototype.suggestions.html = {
  */
 Drupal.dreditor.syntaxAutocomplete.prototype.suggestions.issue = function (needle) {
   var matches;
+  https://www.drupal.org/project/drupal/issues/3231503
   if (matches = needle.match('^https?://(?:www.)?drupal.org/node/([0-9]+)')) {
+    return '[#' + matches[1] + ']^';
+  }
+  if (matches = needle.match('^https?://(?:www.)?drupal.org/project/([a-z_]+)/issues/([0-9]+)')) {
     return '[#' + matches[1] + ']^';
   }
   return false;
