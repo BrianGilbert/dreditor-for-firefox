@@ -2648,7 +2648,7 @@ Drupal.behaviors.dreditorFilterIssueCredits = {
     document.body.classList.add('🪄');
     const summary = document.querySelector('.credit-summary');
     const summaryFilter = document.createElement('div');
-    summary.append(summaryFilter);
+    summary.parentNode.insertBefore(summaryFilter, summary);
     const resetFilter = document.createElement('button')
     resetFilter.textContent = '❌ Reset filter';
     resetFilter.style.display = 'none';
@@ -2658,7 +2658,7 @@ Drupal.behaviors.dreditorFilterIssueCredits = {
       resetFilter.style.display = 'none';
       e.preventDefault();
     })
-    summary.append(resetFilter);
+    summary.parentNode.insertBefore(resetFilter, summary);
     document.querySelectorAll('input[data-by]').forEach(el => {
       const btn = document.createElement('button');
       btn.textContent = '🔍️ Filter';
@@ -2703,7 +2703,7 @@ Drupal.behaviors.dreditorFilterIssueCredits = {
         btn.addEventListener('click', (e) => {
           e.preventDefault();
           tgt.checked = true;
-          tgt.scrollIntoView();
+          summaryFilter.scrollIntoView();
         });
         el.appendChild(btn);
       }
